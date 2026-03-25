@@ -1,0 +1,46 @@
+{
+  "cohorts": [
+    {
+      "cohort_id": "e629fa6598d73276",
+      "count": 2,
+      "prime_code": "15"
+    },
+    {
+      "cohort_id": "d4735e3a265e16ee",
+      "count": 1,
+      "prime_code": "2"
+    },
+    {
+      "cohort_id": "7902699be42c8a8e",
+      "count": 1,
+      "prime_code": "7"
+    },
+    {
+      "cohort_id": "a88a7902cb4ef697",
+      "count": 1,
+      "prime_code": "77"
+    }
+  ],
+  "counts_by_prime": {
+    "CITIZEN": 2,
+    "CREATOR": 1,
+    "FOUNDER": 1,
+    "PARENT": 2,
+    "PATIENT": 2
+  },
+  "counts_by_realm": {
+    "adtech": 1,
+    "citizen_cloud": 1,
+    "citizen_fog": 2,
+    "institution": 1
+  },
+  "privacy": {
+    "epsilon": 2.0,
+    "note": "Toy bounded noise; use a vetted DP mechanism for production.",
+    "seed": 7
+  },
+  "window": {
+    "end_ts": "2026-01-01T09:05:00Z",
+    "start_ts": "2026-01-01T09:00:00Z"
+  }
+}

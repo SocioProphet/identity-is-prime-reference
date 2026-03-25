@@ -1,0 +1,253 @@
+{
+  "claim": "identity_is_prime_demo",
+  "counterexample": [
+    {
+      "action": "HSM_NONCE_INIT",
+      "actor": "<unknown>",
+      "attrs_keys": [
+        "device_id"
+      ],
+      "event_index": 0,
+      "evidence_keys": [
+        "nonce_stream"
+      ],
+      "primes": [
+        "FOUNDER"
+      ],
+      "scope": {
+        "app": "sourceos",
+        "device": "phone_A",
+        "jurisdiction": "US-CA",
+        "realm": "citizen_fog"
+      },
+      "ts": "2026-01-01T09:00:00Z"
+    },
+    {
+      "action": "HEALTH_PORTAL_LOGIN",
+      "actor": "<unknown>",
+      "attrs_keys": [
+        "device_id",
+        "email"
+      ],
+      "event_index": 1,
+      "evidence_keys": [
+        "nonce_observed"
+      ],
+      "primes": [
+        "PATIENT",
+        "PARENT"
+      ],
+      "scope": {
+        "app": "health_portal",
+        "device": "phone_A",
+        "jurisdiction": "US-CA",
+        "realm": "institution"
+      },
+      "ts": "2026-01-01T09:02:00Z"
+    }
+  ],
+  "diagnostics": {
+    "duration_ms": 27,
+    "iter_count": 5,
+    "widen_count": 0
+  },
+  "domains": [
+    "ER(boost+principles)",
+    "POLICY(prime_veto)",
+    "CONGRUENCE(mod_stream)"
+  ],
+  "inputs": {
+    "event_count": 5,
+    "events_path": "/mnt/data/identity_is_prime_reference_v2/identity_is_prime_reference/examples/michael_identity_prime_trace.jsonl",
+    "events_sha256": "b0280f03eb2b8d97b7b0f62af1b606b0df98a8ab0e09209d04703c2928d1bcb7",
+    "policy_path": "/mnt/data/identity_is_prime_reference_v2/identity_is_prime_reference/examples/policies/default_policy.json",
+    "policy_sha256": "715c40e61d94835fab481504273b009b9112b7cd0de902c669434d0b17f09f4d"
+  },
+  "precision": {
+    "mode": "Toy",
+    "note": "For production: record Exact/Approx{\u03b4} and widening deltas."
+  },
+  "schedule": {
+    "base": 2.718281828459045,
+    "checkpoints": [
+      3,
+      8,
+      21,
+      55,
+      149,
+      404,
+      1097,
+      2981,
+      8104,
+      22027
+    ],
+    "note": "base-e packing (first 10 checkpoints)"
+  },
+  "status": "VIOLATION",
+  "violations": [
+    {
+      "action": "THIRD_PARTY_PIXEL_FIRE",
+      "details": {
+        "pair": [
+          "ADS",
+          "PARENT"
+        ],
+        "primes": [
+          "ADS",
+          "PARENT",
+          "PATIENT"
+        ]
+      },
+      "event_index": 2,
+      "kind": "FORBIDDEN_PRIME_COOC",
+      "scope": "adtech",
+      "ts": "2026-01-01T09:02:03Z"
+    },
+    {
+      "action": "THIRD_PARTY_PIXEL_FIRE",
+      "details": {
+        "pair": [
+          "ADS",
+          "PATIENT"
+        ],
+        "primes": [
+          "ADS",
+          "PARENT",
+          "PATIENT"
+        ]
+      },
+      "event_index": 2,
+      "kind": "FORBIDDEN_PRIME_COOC",
+      "scope": "adtech",
+      "ts": "2026-01-01T09:02:03Z"
+    },
+    {
+      "action": "THIRD_PARTY_PIXEL_FIRE",
+      "details": {
+        "keys": [
+          "PIXEL_ID",
+          "THIRD_PARTY_COOKIE"
+        ],
+        "prime": "PARENT"
+      },
+      "event_index": 2,
+      "kind": "FORBIDDEN_FEATURE_FOR_PRIME",
+      "scope": "adtech",
+      "ts": "2026-01-01T09:02:03Z"
+    },
+    {
+      "action": "THIRD_PARTY_PIXEL_FIRE",
+      "details": {
+        "keys": [
+          "PIXEL_ID",
+          "THIRD_PARTY_COOKIE"
+        ],
+        "prime": "PATIENT"
+      },
+      "event_index": 2,
+      "kind": "FORBIDDEN_FEATURE_FOR_PRIME",
+      "scope": "adtech",
+      "ts": "2026-01-01T09:02:03Z"
+    },
+    {
+      "action": "THIRD_PARTY_PIXEL_FIRE",
+      "details": {
+        "primes": [
+          "ADS",
+          "PARENT",
+          "PATIENT"
+        ],
+        "realm": "adtech"
+      },
+      "event_index": 2,
+      "kind": "SENSITIVE_PRIME_IN_AD_REALM",
+      "scope": "adtech",
+      "ts": "2026-01-01T09:02:03Z"
+    },
+    {
+      "action": "HEALTH_PORTAL_LOGIN",
+      "details": {
+        "bucket": 0,
+        "observed": 107,
+        "steps": 1
+      },
+      "event_index": 1,
+      "kind": "NONCE_STREAM_LEAK",
+      "scope": "institution",
+      "ts": "2026-01-01T09:02:00Z"
+    },
+    {
+      "action": "THIRD_PARTY_PIXEL_FIRE",
+      "details": {
+        "bucket": 0,
+        "observed": 114,
+        "steps": 2
+      },
+      "event_index": 2,
+      "kind": "NONCE_STREAM_LEAK",
+      "scope": "adtech",
+      "ts": "2026-01-01T09:02:03Z"
+    }
+  ],
+  "witnesses": {
+    "edge_reasons_sample": {
+      "0->1": {
+        "kind": "MATCH",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "0->2": {
+        "kind": "BLOCKED",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "0->3": {
+        "kind": "MATCH",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "0->4": {
+        "kind": "MATCH",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "1->2": {
+        "kind": "BLOCKED",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "1->3": {
+        "kind": "MATCH",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "1->4": {
+        "kind": "MATCH",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "2->3": {
+        "kind": "BLOCKED",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "2->4": {
+        "kind": "BLOCKED",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      },
+      "3->4": {
+        "kind": "MATCH",
+        "match_key": "EMAIL_J+PHONE_J+DEVICE_J",
+        "score": 6.2
+      }
+    },
+    "entity_ids": [
+      1,
+      1,
+      2,
+      1,
+      1
+    ]
+  }
+}

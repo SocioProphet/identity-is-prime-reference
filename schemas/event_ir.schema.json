@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "events": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor": {
+            "description": "Local subject id (person)",
+            "type": "string"
+          },
+          "attrs": {
+            "additionalProperties": true,
+            "description": "Event attributes (cookies, ids, handles, nonces, headers...)",
+            "type": "object"
+          },
+          "primes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scope": {
+            "additionalProperties": true,
+            "properties": {
+              "app": {
+                "type": "string"
+              },
+              "device": {
+                "type": "string"
+              },
+              "jurisdiction": {
+                "type": "string"
+              },
+              "peer": {
+                "description": "remote party id, if any",
+                "type": "string"
+              },
+              "realm": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "CITIZEN_FOG",
+                      "CITIZEN_CLOUD",
+                      "INSTITUTION",
+                      "ADTECH",
+                      "HSM",
+                      "DEVICE",
+                      "APP",
+                      "CLOUD"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "pattern": "^(CITIZEN_FOG|CITIZEN_CLOUD|INSTITUTION|ADTECH|HSM|DEVICE|APP|CLOUD)_[A-Z0-9]+([A-Z0-9_]*[A-Z0-9])?$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "description": "Execution/observation realm (fog-first citizen model). Base realms capture our sovereignty boundary; suffixes allow sub-realms without schema churn."
+              }
+            },
+            "required": [
+              "realm",
+              "device",
+              "app"
+            ],
+            "type": "object"
+          },
+          "ts": {
+            "description": "ISO-8601 timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ts",
+          "actor",
+          "scope",
+          "action",
+          "primes",
+          "attrs"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "events"
+  ],
+  "title": "Event-IR",
+  "type": "object"
+}

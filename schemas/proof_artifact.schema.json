@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "claim": {
+      "type": "string"
+    },
+    "counterexample": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "diagnostics": {
+      "properties": {
+        "duration_ms": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "iter_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "widen_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "iter_count",
+        "widen_count",
+        "duration_ms"
+      ],
+      "type": "object"
+    },
+    "domains": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "precision": {
+      "type": "object"
+    },
+    "schedule": {
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "PROVED",
+        "VIOLATION",
+        "INCONCLUSIVE"
+      ],
+      "type": "string"
+    },
+    "violations": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "witnesses": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "claim",
+    "status",
+    "inputs",
+    "domains",
+    "diagnostics"
+  ],
+  "title": "ProofArtifact",
+  "type": "object"
+}
