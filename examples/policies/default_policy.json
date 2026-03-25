@@ -1,0 +1,34 @@
+{
+  "ad_realm_markers": [
+    "ADTECH",
+    "ADS",
+    "MARKETING",
+    "TRACK"
+  ],
+  "forbidden_feature_keys_by_prime": {
+    "PARENT": [
+      "third_party_cookie",
+      "ad_id",
+      "pixel_id"
+    ],
+    "PATIENT": [
+      "third_party_cookie",
+      "ad_id",
+      "pixel_id"
+    ]
+  },
+  "forbidden_prime_pairs": [
+    [
+      "PATIENT",
+      "ADS"
+    ],
+    [
+      "PARENT",
+      "ADS"
+    ],
+    [
+      "CITIZEN",
+      "ADS"
+    ]
+  ]
+}

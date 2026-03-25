@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Identity is Prime: Proof-driven Identity Privacy in the Citizen Fog"
+type: software
+authors:
+  - name: "Identity-is-Prime contributors"
+year: 2026
+license: MIT
+repository-code: "(add repo URL)"
+doi: "(add Zenodo DOI)"

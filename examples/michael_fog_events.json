@@ -1,0 +1,110 @@
+{
+  "version": "1.0",
+  "events": [
+    {
+      "ts": "2025-12-24T01:00:00-05:00",
+      "actor": "MichaelHeller",
+      "scope": {
+        "realm": "FOG",
+        "device": "laptop-01",
+        "app": "Browser"
+      },
+      "action": "LOGIN",
+      "primes": [
+        "P_ENGINEER"
+      ],
+      "attrs": {
+        "name": "Michael Heller",
+        "emails": [
+          "mh@example.com"
+        ],
+        "cookies": [
+          "cA1"
+        ],
+        "nonce": 1007
+      }
+    },
+    {
+      "ts": "2025-12-24T01:01:00-05:00",
+      "actor": "MichaelHeller",
+      "scope": {
+        "realm": "FOG",
+        "device": "laptop-01",
+        "app": "PediatricPortal"
+      },
+      "action": "VIEW_RECORD",
+      "primes": [
+        "P_HEALTH",
+        "P_CHILD"
+      ],
+      "attrs": {
+        "emails": [
+          "mh@example.com"
+        ],
+        "cookies": [
+          "cB2"
+        ]
+      }
+    },
+    {
+      "ts": "2025-12-24T01:02:00-05:00",
+      "actor": "MichaelHeller",
+      "scope": {
+        "realm": "CLOUD_ADTECH",
+        "device": "laptop-01",
+        "app": "AdPixel"
+      },
+      "action": "PAGEVIEW",
+      "primes": [
+        "P_ENGINEER"
+      ],
+      "attrs": {
+        "cookies": [
+          "cB2",
+          "px-777"
+        ],
+        "device_ids": [
+          "laptop-01"
+        ]
+      }
+    },
+    {
+      "ts": "2025-12-24T01:03:00-05:00",
+      "actor": "MichaelHeller",
+      "scope": {
+        "realm": "HSM",
+        "device": "hsm-01",
+        "app": "HSMDriver"
+      },
+      "action": "SIGN",
+      "primes": [
+        "P_ENGINEER"
+      ],
+      "attrs": {
+        "handle": "h1",
+        "nonce": 1014
+      }
+    },
+    {
+      "ts": "2025-12-24T01:04:00-05:00",
+      "actor": "MichaelHeller",
+      "scope": {
+        "realm": "FOG",
+        "device": "phone-01",
+        "app": "CivicSite"
+      },
+      "action": "DONATE",
+      "primes": [
+        "P_CIVIC"
+      ],
+      "attrs": {
+        "emails": [
+          "mh@example.com"
+        ],
+        "cookies": [
+          "cC3"
+        ]
+      }
+    }
+  ]
+}
