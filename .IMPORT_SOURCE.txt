@@ -1,2 +1,5 @@
-Imported from: /Users/michaelheller/Downloads/identity_is_prime_reference
-Canonical name: identity-is-prime-reference
+Imported from archive wrapper: /Users/michaelheller/dev/_incoming_repo_ingest_zipbatch/20260325-final-batch/extracted/15-identity-is-prime-reference-remediated-v2-1
+Candidate root: /Users/michaelheller/dev/_incoming_repo_ingest_zipbatch/20260325-final-batch/extracted/15-identity-is-prime-reference-remediated-v2-1/identity_is_prime_reference
+Suggested slug: identity-is-prime-reference
+Suggested target: SocioProphet/identity-is-prime-reference
+Lane: socioprophet-doctrine
