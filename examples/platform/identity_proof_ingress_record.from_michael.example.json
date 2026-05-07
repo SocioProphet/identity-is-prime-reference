@@ -1,0 +1,18 @@
+{
+  "version": "0.1",
+  "proof_record_id": "proof:identity_is_prime_demo",
+  "proof_source": "first_party_passkey",
+  "subject_id": "pseudo:michael_local_001",
+  "tenant_id": "tenant:local-demo",
+  "received_at": "2026-01-01T09:05:01Z",
+  "result": "rejected",
+  "assurance_context": {
+    "source_artifact_class": "legacy_proof_artifact",
+    "source_result": "VIOLATION"
+  },
+  "evidence_refs": [
+    "proof:identity_is_prime_demo",
+    "claim:identity_is_prime_demo"
+  ],
+  "correlation_id": "claim:identity_is_prime_demo"
+}
