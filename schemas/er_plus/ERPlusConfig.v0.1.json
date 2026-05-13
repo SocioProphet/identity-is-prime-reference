@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.socioprophet.ai/identity-is-prime/er_plus/ERPlusConfig.v0.1.json",
+  "title": "ERPlusConfig v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_path", "entity_path", "behavior", "neutrality"],
+  "properties": {
+    "schema_version": {"const": "er_plus.config.v0.1"},
+    "record_path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_depth", "max_cost", "beam_width", "metric_claim"],
+      "properties": {
+        "max_depth": {"type": "integer", "minimum": 0},
+        "max_cost": {"type": "number", "minimum": 0},
+        "beam_width": {"type": "integer", "minimum": 1},
+        "canonicalization_profile": {"type": "string"},
+        "metric_claim": {
+          "type": "string",
+          "enum": ["path_cost", "quasi_metric", "metric_under_symmetric_inverse_assumptions"]
+        }
+      }
+    },
+    "entity_path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_moves", "max_cost", "beam_width", "allowed_moves"],
+      "properties": {
+        "max_moves": {"type": "integer", "minimum": 0},
+        "max_cost": {"type": "number", "minimum": 0},
+        "beam_width": {"type": "integer", "minimum": 1},
+        "allowed_moves": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["add_record", "drop_record", "reassign_record", "merge_entities", "split_entity", "posterior_refresh"]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature_mode", "min_events"],
+      "properties": {
+        "feature_mode": {"type": "string", "enum": ["dense_delay_vectors", "irregular_time_masked_delay_vectors"]},
+        "tau": {"type": "integer", "minimum": 1},
+        "dimension": {"type": "integer", "minimum": 1},
+        "min_events": {"type": "integer", "minimum": 0},
+        "takens_claim": {"type": "string", "enum": ["inspired_feature_only", "formal_embedding_claim_requires_separate_assumptions"]}
+      }
+    },
+    "neutrality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "tolerance", "comparison"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "tolerance": {"type": "number", "minimum": 0},
+        "comparison": {"type": "string", "enum": ["canonical_json_hash", "custom_state_distance"]},
+        "admissible_reorderings_per_window": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
