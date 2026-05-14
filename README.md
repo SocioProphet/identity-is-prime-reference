@@ -14,6 +14,7 @@ What’s included:
 * **Policy veto** on merges and events (prime-topic constraints)
 * **Congruence lane** for modular evidence (nonce streams, wraparound-style)
 * **Proof artifacts** (structured outputs with diagnostics)
+* **DIH proof-mapping harness** (toy Schnorr/RSA interactive-proof mappings with extractor and simulator tests)
 
 Documentation lives in `docs/`:
 * `00_EXEC_SUMMARY.md` — what we built and why
@@ -23,6 +24,7 @@ Documentation lives in `docs/`:
 * `40_WORKED_EXAMPLE_MICHAEL.md` — a runnable synthetic trace
 * `50_SENZING_REVIEW_AND_UPGRADES.md` — what we keep and what we upgrade
 * `60_BOOK_SYLLABUS.md` — class/book blueprint
+* `70_LECTURE_TO_DIH_PROOF_MAPPING.md` — executable mapping from lecture proofs to DIH toy proof harnesses
 
 ---
 
@@ -53,17 +55,25 @@ python -m prime_er.cli segment \
   --seed 7
 ```
 
+DIH proof-mapping regression tests:
+
+```bash
+python -m unittest tests.test_dih_proof_mapping
+```
+
 ---
 
 ## What this is / isn’t
 
 ✅ A compact, readable specimen you can teach from.  
 ✅ A foundation for a larger platform (SourceOS + Prophet + proof artifacts).  
-✅ A place where ER, formal methods, and privacy policy meet coherently.
+✅ A place where ER, formal methods, and privacy policy meet coherently.  
+✅ A toy proof-mapping harness for teaching extractor and simulator logic.
 
 ❌ Not production-hardened.  
 ❌ Not a drop-in replacement for enterprise ER engines.  
-❌ Not a vetted differential privacy implementation (the “noise” in `segment` is toy).
+❌ Not a vetted differential privacy implementation (the “noise” in `segment` is toy).  
+❌ Not production cryptography.
 
 ---
 
