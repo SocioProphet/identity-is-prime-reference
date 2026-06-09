@@ -14,6 +14,7 @@ What’s included:
 * **Policy veto** on merges and events (prime-topic constraints)
 * **Congruence lane** for modular evidence (nonce streams, wraparound-style)
 * **Proof artifacts** (structured outputs with diagnostics)
+* **Personhood binding proof profile** (anti-object-collapse proof profile for binding identity meshes to living human subjects)
 
 Documentation lives in `docs/`:
 * `00_EXEC_SUMMARY.md` — what we built and why
@@ -23,6 +24,7 @@ Documentation lives in `docs/`:
 * `40_WORKED_EXAMPLE_MICHAEL.md` — a runnable synthetic trace
 * `50_SENZING_REVIEW_AND_UPGRADES.md` — what we keep and what we upgrade
 * `60_BOOK_SYLLABUS.md` — class/book blueprint
+* `70_PERSONHOOD_BINDING_PROOF_PROFILE.md` — proof-artifact profile for personhood binding without wallet/account/portrait/device collapse
 
 ---
 
