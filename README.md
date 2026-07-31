@@ -70,6 +70,21 @@ Flags: `--max-contribution` (L1 sensitivity), `--k-anonymity` (noisy-count
 release threshold), `--min-actors` (operational whole-release floor), `--budget`
 and `--ledger` (persistent, cross-run ε accounting).
 
+### Governed claim + warrant card
+
+`--proof` binds the release into a schema-conformant **ProofArtifact** — a
+first-class governed claim carrying `epistemicLevel: empirical`, with the DP
+parameters as its `precision` **warrant**. `--validate` checks it against
+`schemas/proof_artifact.schema.json`. `render` turns any ProofArtifact into a
+self-contained HTML **warrant card** (colour-coded by `epistemicLevel`, no
+external requests) — *every surface shows its warrant*.
+
+```bash
+python -m prime_er.cli segment --in examples/synthetic_population_trace.jsonl \
+  --out /tmp/claim.json --epsilon 2.0 --seed 7 --proof --validate
+python -m prime_er.cli render --in /tmp/claim.json --out /tmp/warrant.html
+```
+
 ---
 
 ## What this is / isn’t

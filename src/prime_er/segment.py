@@ -14,6 +14,7 @@ from .dp import (
 from .event import Event
 from .policy import Policy
 from .primes import default_prime_topics, encode_topics
+from .proofs import ProofArtifact
 
 # Number of independent histograms released (by_prime, by_realm, cohort).
 # The total epsilon budget is split across these via sequential composition.
@@ -181,3 +182,42 @@ def segment_summary(
             ),
         },
     }
+
+
+def release_to_proof_artifact(release: Dict[str, Any], *, inputs: Optional[Dict[str, Any]] = None) -> ProofArtifact:
+    """Bind a segment release into a schema-conformant ProofArtifact (a Stardust claim).
+
+    * RELEASED -> status PROVED, epistemicLevel ``empirical`` (the counts are
+      measured); the DP parameters become the ``precision`` warrant and the
+      aggregates become ``witnesses``.
+    * REFUSED  -> status INCONCLUSIVE, no epistemicLevel; the refusal is recorded
+      as a ``PRIVACY_REFUSAL`` violation, and no counts are carried.
+    """
+    inputs = dict(inputs or {})
+    if release.get("status") == "RELEASED":
+        privacy = release.get("privacy", {})
+        art = ProofArtifact(
+            claim="marketer_safe_segment",
+            status="PROVED",
+            epistemic_level="empirical",
+            inputs={**inputs, "contributors": privacy.get("contributors")},
+            domains=["DP(laplace+noisy_threshold)", "POLICY(prime_veto)", "AGGREGATE(marketer_safe)"],
+            witnesses={
+                "window": release.get("window", {}),
+                "counts_by_prime": release.get("counts_by_prime", {}),
+                "counts_by_realm": release.get("counts_by_realm", {}),
+                "cohorts": release.get("cohorts", []),
+            },
+            precision=privacy,  # the DP warrant travels with the claim
+        )
+        art.diagnostics.iter_count = int(privacy.get("contributors") or 0)
+        return art
+
+    # REFUSED
+    return ProofArtifact(
+        claim="marketer_safe_segment",
+        status="INCONCLUSIVE",
+        inputs=inputs,
+        domains=["DP(laplace+noisy_threshold)", "POLICY(prime_veto)", "AGGREGATE(marketer_safe)"],
+        violations=[{"kind": "PRIVACY_REFUSAL", "details": release.get("refusal", {})}],
+    )

@@ -65,6 +65,37 @@ def test_cli_segment_refuses_single_actor_trace(tmp_path: Path):
     assert "third_party_cookie" not in out_text
 
 
+def test_cli_segment_validate_requires_proof(tmp_path: Path):
+    """--validate without --proof must fail fast, not silently no-op."""
+    repo = Path(__file__).resolve().parents[1]
+    src = repo / "src"
+    trace = repo / "examples" / "synthetic_population_trace.jsonl"
+    out = tmp_path / "seg.json"
+    cp = run_cmd(
+        [sys.executable, "-m", "prime_er.cli", "segment", "--in", str(trace),
+         "--out", str(out), "--epsilon", "2.0", "--validate"],
+        extra_env={"PYTHONPATH": str(src)},
+    )
+    assert cp.returncode != 0
+    assert "requires --proof" in (cp.stderr + cp.stdout)
+
+
+def test_cli_segment_proof_emits_conformant_claim(tmp_path: Path):
+    repo = Path(__file__).resolve().parents[1]
+    src = repo / "src"
+    trace = repo / "examples" / "synthetic_population_trace.jsonl"
+    out = tmp_path / "claim.json"
+    cp = run_cmd(
+        [sys.executable, "-m", "prime_er.cli", "segment", "--in", str(trace),
+         "--out", str(out), "--epsilon", "2.0", "--seed", "7", "--proof", "--validate"],
+        extra_env={"PYTHONPATH": str(src)},
+    )
+    assert cp.returncode == 0, cp.stderr
+    obj = json.loads(out.read_text(encoding="utf-8"))
+    assert obj["claim"] == "marketer_safe_segment"
+    assert obj["epistemicLevel"] == "empirical"
+
+
 def test_cli_segment_releases_on_population(tmp_path: Path):
     """A sufficiently large population releases a marketer-safe, DP summary."""
     repo = Path(__file__).resolve().parents[1]
