@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -153,11 +154,40 @@ def analyze(in_path: str, policy_path: Optional[str], out_path: str, validate: b
     Path(out_path).write_text(artifact.to_json(), encoding="utf-8")
 
 
-def segment(in_path: str, policy_path: Optional[str], out_path: str, epsilon: Optional[float], seed: int) -> None:
+def segment(
+    in_path: str,
+    policy_path: Optional[str],
+    out_path: str,
+    epsilon: Optional[float],
+    seed: int,
+    *,
+    max_contribution: int = 2,
+    k_anonymity: int = 5,
+    min_actors: Optional[int] = None,
+    budget: float = 10.0,
+    ledger_path: Optional[str] = None,
+) -> int:
     ir = load_event_ir(in_path)
     policy = load_policy(policy_path)
-    out = segment_summary(ir.events, policy=policy, epsilon=epsilon, seed=seed)
+    out = segment_summary(
+        ir.events,
+        policy=policy,
+        epsilon=epsilon,
+        seed=seed,
+        max_contribution=max_contribution,
+        k_anonymity=k_anonymity,
+        min_actors=min_actors,
+        budget=budget,
+        ledger_path=ledger_path,
+    )
     Path(out_path).write_text(json.dumps(out, indent=2, sort_keys=True), encoding="utf-8")
+    # Fail-closed: a refused release is a non-zero exit so callers/CI cannot
+    # mistake a withheld (privacy-protected) result for a successful one.
+    if out.get("status") == "REFUSED":
+        reason = out.get("refusal", {}).get("reason", "unknown")
+        print(f"segment refused: {reason}", file=sys.stderr)
+        return 3
+    return 0
 
 
 def main() -> None:
@@ -171,18 +201,35 @@ def main() -> None:
     ap_an.add_argument("--validate", action="store_true", help="Validate events against schema")
     ap_an.add_argument("--max-steps", type=int, default=1000, help="Bounded congruence max steps")
 
-    ap_seg = sp.add_parser("segment", help="Emit marketer-safe aggregates (no actor IDs)")
+    ap_seg = sp.add_parser("segment", help="Emit marketer-safe, differentially-private aggregates (no actor IDs)")
     ap_seg.add_argument("--in", dest="in_path", required=True)
     ap_seg.add_argument("--policy", dest="policy_path", default=None)
     ap_seg.add_argument("--out", dest="out_path", required=True)
-    ap_seg.add_argument("--epsilon", type=float, default=None, help="Optional toy noise strength")
+    ap_seg.add_argument("--epsilon", type=float, default=None, help="Total epsilon budget for this release (required, > 0)")
     ap_seg.add_argument("--seed", type=int, default=0)
+    ap_seg.add_argument("--max-contribution", dest="max_contribution", type=int, default=2, help="Max cells one actor may affect (L1 sensitivity)")
+    ap_seg.add_argument("--k-anonymity", dest="k_anonymity", type=int, default=5, help="Suppress cells with fewer than k actors")
+    ap_seg.add_argument("--min-actors", dest="min_actors", type=int, default=None, help="Refuse the whole release below this many contributors (defaults to k)")
+    ap_seg.add_argument("--budget", type=float, default=10.0, help="Total epsilon budget for the ledger")
+    ap_seg.add_argument("--ledger", dest="ledger_path", default=None, help="Path to a persistent epsilon ledger (enforced across runs)")
 
     args = ap.parse_args()
     if args.cmd == "analyze":
         analyze(args.in_path, args.policy_path, args.out_path, validate=args.validate, max_steps=args.max_steps)
     elif args.cmd == "segment":
-        segment(args.in_path, args.policy_path, args.out_path, epsilon=args.epsilon, seed=args.seed)
+        rc = segment(
+            args.in_path,
+            args.policy_path,
+            args.out_path,
+            epsilon=args.epsilon,
+            seed=args.seed,
+            max_contribution=args.max_contribution,
+            k_anonymity=args.k_anonymity,
+            min_actors=args.min_actors,
+            budget=args.budget,
+            ledger_path=args.ledger_path,
+        )
+        raise SystemExit(rc)
     else:
         raise SystemExit(2)
 
