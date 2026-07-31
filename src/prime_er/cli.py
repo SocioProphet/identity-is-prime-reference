@@ -14,8 +14,18 @@ from .er import resolve_entities
 from .event import Event, load_event_ir
 from .policy import load_policy
 from .proofs import ProofArtifact, sha256_file
+from .render import render_warrant_card
 from .schedule import ScheduleConfig, exp_checkpoints, log_bucket
-from .segment import segment_summary
+from .segment import release_to_proof_artifact, segment_summary
+
+
+def _validate_proof_artifact(artifact_json: str) -> List[str]:
+    """Validate an emitted ProofArtifact against the JSON schema. Returns errors."""
+    schema_path = Path(__file__).resolve().parents[2] / "schemas" / "proof_artifact.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    v = Draft202012Validator(schema)
+    obj = json.loads(artifact_json)
+    return [f"{list(e.path)}: {e.message}" for e in sorted(v.iter_errors(obj), key=lambda e: list(e.path))]
 
 
 def _load_schema_dict(path: Path) -> Dict[str, Any]:
@@ -166,6 +176,8 @@ def segment(
     min_actors: Optional[int] = None,
     budget: float = 10.0,
     ledger_path: Optional[str] = None,
+    proof: bool = False,
+    validate: bool = False,
 ) -> int:
     ir = load_event_ir(in_path)
     policy = load_policy(policy_path)
@@ -180,13 +192,42 @@ def segment(
         budget=budget,
         ledger_path=ledger_path,
     )
-    Path(out_path).write_text(json.dumps(out, indent=2, sort_keys=True), encoding="utf-8")
+
+    if proof:
+        # Bind the release into a schema-conformant ProofArtifact (a Stardust claim).
+        artifact = release_to_proof_artifact(
+            out,
+            inputs={
+                "events_path": str(in_path),
+                "events_sha256": sha256_file(in_path),
+                "policy_path": str(policy_path) if policy_path else "<default>",
+                "epsilon": epsilon,
+                "k_anonymity": k_anonymity,
+                "max_contribution": max_contribution,
+            },
+        )
+        artifact_json = artifact.to_json()
+        if validate:
+            errs = _validate_proof_artifact(artifact_json)
+            if errs:
+                raise SystemExit("ProofArtifact schema validation failed:\n" + "\n".join(errs))
+        Path(out_path).write_text(artifact_json, encoding="utf-8")
+    else:
+        Path(out_path).write_text(json.dumps(out, indent=2, sort_keys=True), encoding="utf-8")
+
     # Fail-closed: a refused release is a non-zero exit so callers/CI cannot
     # mistake a withheld (privacy-protected) result for a successful one.
     if out.get("status") == "REFUSED":
         reason = out.get("refusal", {}).get("reason", "unknown")
         print(f"segment refused: {reason}", file=sys.stderr)
         return 3
+    return 0
+
+
+def render(in_path: str, out_path: str) -> int:
+    """Render a ProofArtifact JSON into a self-contained HTML warrant card."""
+    artifact = json.loads(Path(in_path).read_text(encoding="utf-8"))
+    Path(out_path).write_text(render_warrant_card(artifact), encoding="utf-8")
     return 0
 
 
@@ -212,6 +253,12 @@ def main() -> None:
     ap_seg.add_argument("--min-actors", dest="min_actors", type=int, default=None, help="Refuse the whole release below this many contributors (defaults to k)")
     ap_seg.add_argument("--budget", type=float, default=10.0, help="Total epsilon budget for the ledger")
     ap_seg.add_argument("--ledger", dest="ledger_path", default=None, help="Path to a persistent epsilon ledger (enforced across runs)")
+    ap_seg.add_argument("--proof", action="store_true", help="Emit a schema-conformant ProofArtifact (Stardust claim) instead of the raw release")
+    ap_seg.add_argument("--validate", action="store_true", help="Validate the emitted ProofArtifact against the schema (with --proof)")
+
+    ap_rn = sp.add_parser("render", help="Render a ProofArtifact JSON into a self-contained HTML warrant card")
+    ap_rn.add_argument("--in", dest="in_path", required=True, help="Input ProofArtifact JSON")
+    ap_rn.add_argument("--out", dest="out_path", required=True, help="Output HTML file")
 
     args = ap.parse_args()
     if args.cmd == "analyze":
@@ -228,8 +275,12 @@ def main() -> None:
             min_actors=args.min_actors,
             budget=args.budget,
             ledger_path=args.ledger_path,
+            proof=args.proof,
+            validate=args.validate,
         )
         raise SystemExit(rc)
+    elif args.cmd == "render":
+        raise SystemExit(render(args.in_path, args.out_path))
     else:
         raise SystemExit(2)
 
