@@ -42,6 +42,15 @@ def test_warrant_card_escapes_untrusted_strings():
     assert "&lt;script&gt;" in html
 
 
+def test_warrant_card_handles_malformed_artifact():
+    # render accepts arbitrary JSON; non-dict fields must not crash it.
+    artifact = {"claim": "x", "status": "PROVED", "epistemicLevel": "empirical",
+                "precision": "not-a-dict", "witnesses": ["also", "wrong"], "inputs": 42}
+    html = render_warrant_card(artifact)
+    assert "<!doctype html>" in html.lower()
+    assert "not-a-dict" in html
+
+
 def test_warrant_card_renders_refusal():
     artifact = {"claim": "marketer_safe_segment", "status": "INCONCLUSIVE",
                 "violations": [{"kind": "PRIVACY_REFUSAL", "details": {"reason": "insufficient_actors"}}],

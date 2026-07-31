@@ -31,9 +31,14 @@ def _esc(v: Any) -> str:
     return html.escape(str(v), quote=True)
 
 
-def _rows(d: Dict[str, Any]) -> str:
+def _rows(d: Any) -> str:
+    # `render` accepts arbitrary JSON, so a field expected to be a dict may not be.
+    # Degrade gracefully rather than crashing.
+    if not isinstance(d, dict):
+        return f'<tr><td class="v" colspan="2">{_esc(d)}</td></tr>' if d not in ({}, [], None, "") \
+            else '<tr><td class="v" colspan="2">—</td></tr>'
     out = []
-    for k in sorted(d):
+    for k in sorted(d, key=str):
         v = d[k]
         if isinstance(v, (dict, list)):
             v = json.dumps(v, sort_keys=True)
@@ -49,14 +54,18 @@ def render_warrant_card(artifact: Dict[str, Any]) -> str:
     level_color = _LEVEL_COLOR.get(level, "#8A949E")
     status_color = _STATUS_COLOR.get(status, "#8A949E")
 
-    precision = artifact.get("precision", {}) or {}
-    witnesses = artifact.get("witnesses", {}) or {}
-    violations = artifact.get("violations", []) or []
+    precision = artifact.get("precision", {})
+    witnesses = artifact.get("witnesses", {})
+    if not isinstance(witnesses, dict):
+        witnesses = {}
+    violations = artifact.get("violations", [])
+    if not isinstance(violations, list):
+        violations = [violations]
 
     warrant_rows = _rows(precision)
     prime_rows = _rows(witnesses.get("counts_by_prime", {}))
     realm_rows = _rows(witnesses.get("counts_by_realm", {}))
-    inputs_rows = _rows(artifact.get("inputs", {}) or {})
+    inputs_rows = _rows(artifact.get("inputs", {}))
 
     viol_html = ""
     if violations:

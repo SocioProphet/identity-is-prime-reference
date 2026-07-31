@@ -179,6 +179,10 @@ def segment(
     proof: bool = False,
     validate: bool = False,
 ) -> int:
+    # Fail fast: --validate only applies to the ProofArtifact form. Silently
+    # ignoring it would mislead users into thinking the raw release was validated.
+    if validate and not proof:
+        raise SystemExit("--validate requires --proof (the raw release is not schema-validated)")
     ir = load_event_ir(in_path)
     policy = load_policy(policy_path)
     out = segment_summary(
