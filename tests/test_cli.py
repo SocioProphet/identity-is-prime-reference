@@ -39,7 +39,9 @@ def test_cli_analyze_emits_artifact(tmp_path: Path):
     assert len(obj.get("violations", [])) >= 1
 
 
-def test_cli_segment_emits_marketer_safe_summary(tmp_path: Path):
+def test_cli_segment_refuses_single_actor_trace(tmp_path: Path):
+    """The single-actor example trace must REFUSE (fail-closed) under the privacy
+    floor — a cohort of one cannot be released. rc != 0 so CI can't miss it."""
     repo = Path(__file__).resolve().parents[1]
     src = repo / "src"
     examples = repo / "examples"
@@ -51,13 +53,43 @@ def test_cli_segment_emits_marketer_safe_summary(tmp_path: Path):
         [sys.executable, "-m", "prime_er.cli", "segment", "--in", str(trace), "--policy", str(policy), "--out", str(out), "--epsilon", "2.0", "--seed", "7"],
         extra_env={"PYTHONPATH": str(src)},
     )
-    assert cp.returncode == 0, cp.stderr
+    assert cp.returncode == 3, cp.stderr
 
     obj = json.loads(out.read_text(encoding="utf-8"))
-    assert "counts_by_prime" in obj
-    assert "cohorts" in obj
-
-    # Ensure we did not export raw identifiers
+    assert obj["status"] == "REFUSED"
+    assert obj["refusal"]["reason"] == "insufficient_actors"
+    # No counts and no raw identifiers leaked on refusal.
+    assert obj["counts_by_prime"] == {}
     out_text = out.read_text(encoding="utf-8").lower()
     assert "michael@example.com" not in out_text
     assert "third_party_cookie" not in out_text
+
+
+def test_cli_segment_releases_on_population(tmp_path: Path):
+    """A sufficiently large population releases a marketer-safe, DP summary."""
+    repo = Path(__file__).resolve().parents[1]
+    src = repo / "src"
+    trace = repo / "examples" / "synthetic_population_trace.jsonl"
+
+    out = tmp_path / "segment.json"
+    cp = run_cmd(
+        [sys.executable, "-m", "prime_er.cli", "segment", "--in", str(trace), "--out", str(out), "--epsilon", "2.0", "--seed", "7"],
+        extra_env={"PYTHONPATH": str(src)},
+    )
+    assert cp.returncode == 0, cp.stderr
+
+    obj = json.loads(out.read_text(encoding="utf-8"))
+    assert obj["status"] == "RELEASED"
+    assert "counts_by_prime" in obj and "cohorts" in obj
+    assert obj["privacy"]["mechanism"] == "laplace+noisy_threshold"
+    assert obj["privacy"]["guarantee"] == "(epsilon, delta)-DP"
+    assert obj["privacy"]["delta_per_cell"] > 0.0
+    assert obj["privacy"]["contributors"] >= 5
+    # Suppressed cells are reported as counts only, never as keys.
+    assert isinstance(obj["privacy"]["suppressed_cell_counts"]["by_prime"], int)
+    # The RNG seed must not leak (it would let anyone subtract the noise).
+    assert "seed" not in obj["privacy"]
+    # No raw identifiers or device ids in the released aggregate.
+    out_text = out.read_text(encoding="utf-8").lower()
+    assert "device_id" not in out_text
+    assert "dev00" not in out_text
