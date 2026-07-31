@@ -13,11 +13,13 @@ Threat model (declared first, per "the system states its own limits"):
 * **Contribution bounding.** Each actor contributes presence (0/1) to at most
   ``max_contribution`` distinct cells of a histogram. That caps the L1
   sensitivity of the histogram to ``max_contribution``.
-* **Mechanism.** Pure epsilon-DP (delta = 0) via the Laplace mechanism, scale =
-  sensitivity / epsilon, applied per surviving cell.
-* **k-anonymity suppression** runs on TRUE counts *before* release: any cell
-  describing fewer than ``k_anonymity`` actors is withheld entirely — it is
-  never noised-and-released. Small cells are refused, not leaked.
+* **Mechanism.** Laplace mechanism (scale = sensitivity / epsilon) plus
+  **noisy-count thresholding** (a "stability histogram"): a cell is released only
+  if its *noised* count clears the threshold. Because the keep/drop decision is
+  made on the DP-noised value it is valid post-processing, giving **(epsilon,
+  delta)-DP** — thresholding on the *true* count would be data-dependent and leak.
+* Small cells are dropped, not leaked; callers publish suppressed *counts*, never
+  the suppressed cell keys, and never the RNG seed.
 * **Sequential composition.** Releasing several histograms over the same actors
   spends the sum of their epsilons; the caller must budget accordingly.
 
@@ -87,28 +89,53 @@ def release_histogram(
     *,
     epsilon: float,
     sensitivity: int,
-    k_anonymity: int,
+    threshold: int,
     rng: random.Random,
 ) -> Tuple[Dict[str, int], List[str]]:
-    """k-anonymity-suppress then Laplace-privatise a per-cell count histogram.
+    """Noisy-count thresholding ("stability histogram") -> (epsilon, delta)-DP.
 
-    Returns ``(released_counts, suppressed_cell_keys)``. Cells with a TRUE count
-    below ``k_anonymity`` are suppressed (never released). Surviving cells get
-    Laplace(sensitivity/epsilon) noise, clamped to >= 0 and rounded to int.
+    Adds Laplace(sensitivity/epsilon) noise to each cell, then RELEASES a cell
+    only if its **noisy** count meets ``threshold``. The keep/drop decision is
+    made on the DP-noised value, so it is valid post-processing of a DP release
+    — unlike thresholding on the *true* count, which is data-dependent and leaks
+    one bit (whether the true count cleared the floor).
+
+    Returns ``(released_counts, suppressed_cell_keys)``. The suppressed keys are
+    for internal accounting/testing only; callers MUST NOT publish them (emitting
+    which cells fell below the floor is itself a disclosure — see ``segment.py``,
+    which reports suppressed *counts* only).
     """
     if epsilon <= 0.0:
         raise ValueError("epsilon must be > 0 for a private release")
+    if threshold < 1:
+        raise ValueError("threshold must be >= 1")
     scale = float(sensitivity) / float(epsilon)
     released: Dict[str, int] = {}
     suppressed: List[str] = []
     for cell in sorted(true_counts):
-        true_c = true_counts[cell]
-        if true_c < k_anonymity:
+        noisy = true_counts[cell] + laplace_noise(rng, scale)
+        if noisy >= threshold:
+            released[cell] = max(0, int(round(noisy)))
+        else:
             suppressed.append(cell)
-            continue
-        noisy = true_c + laplace_noise(rng, scale)
-        released[cell] = max(0, int(round(noisy)))
     return released, suppressed
+
+
+def suppression_delta(threshold: int, sensitivity: int, epsilon: float) -> float:
+    """Per-cell delta contributed by the noisy-count threshold.
+
+    Upper-bounds the probability that a cell whose presence hinges on a single
+    contributing actor is nonetheless released. For Laplace(sensitivity/epsilon)
+    and threshold ``tau >= sensitivity``:
+
+        delta <= 0.5 * exp(-epsilon * (tau/sensitivity - 1))
+
+    Below ``sensitivity`` the threshold provides no stability guarantee, so we
+    report the trivial bound of 0.5 (the release is effectively epsilon-DP only).
+    """
+    if epsilon <= 0.0 or threshold <= sensitivity:
+        return 0.5
+    return 0.5 * math.exp(-epsilon * (float(threshold) / float(sensitivity) - 1.0))
 
 
 @dataclass
@@ -153,8 +180,17 @@ class PrivacyLedger:
     def save(self) -> None:
         if not self.path:
             return
-        with open(self.path, "w", encoding="utf-8") as f:
+        # Atomic write: ensure the directory exists, write to a temp file, then
+        # os.replace. A crash/disk-full mid-write must not corrupt the ledger and
+        # silently disable the fail-closed budget across runs.
+        parent = os.path.dirname(os.path.abspath(self.path))
+        os.makedirs(parent, exist_ok=True)
+        tmp = f"{self.path}.tmp.{os.getpid()}"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2, sort_keys=True)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, self.path)
 
     @staticmethod
     def load_or_init(path: Optional[str], total_budget: float) -> "PrivacyLedger":

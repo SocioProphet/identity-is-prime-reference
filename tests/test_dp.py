@@ -15,6 +15,7 @@ from prime_er.dp import (  # noqa: E402
     clamp_contribution,
     laplace_noise,
     release_histogram,
+    suppression_delta,
 )
 
 
@@ -50,10 +51,12 @@ def test_clamp_contribution_bounds_sensitivity():
     assert max(counts.values()) <= 11
 
 
-def test_release_histogram_suppresses_small_cells():
-    true_counts = {"big": 40, "small": 2}
+def test_release_histogram_suppresses_small_cells_on_noisy_count():
+    # Low noise (eps high) so the noisy count tracks the true count closely:
+    # small (1) stays well under threshold 8; big (500) clears it.
+    true_counts = {"big": 500, "small": 1}
     released, suppressed = release_histogram(
-        true_counts, epsilon=1.0, sensitivity=1, k_anonymity=5, rng=random.Random(3)
+        true_counts, epsilon=5.0, sensitivity=1, threshold=8, rng=random.Random(3)
     )
     assert "small" in suppressed
     assert "small" not in released
@@ -63,7 +66,15 @@ def test_release_histogram_suppresses_small_cells():
 
 def test_release_histogram_requires_positive_epsilon():
     with pytest.raises(ValueError):
-        release_histogram({"a": 10}, epsilon=0.0, sensitivity=1, k_anonymity=1, rng=random.Random(0))
+        release_histogram({"a": 10}, epsilon=0.0, sensitivity=1, threshold=1, rng=random.Random(0))
+
+
+def test_suppression_delta_decreases_with_threshold():
+    # Higher threshold -> smaller delta; below sensitivity -> trivial 0.5 bound.
+    d_low = suppression_delta(threshold=5, sensitivity=1, epsilon=1.0)
+    d_high = suppression_delta(threshold=20, sensitivity=1, epsilon=1.0)
+    assert 0.0 < d_high < d_low <= 0.5
+    assert suppression_delta(threshold=1, sensitivity=2, epsilon=1.0) == 0.5
 
 
 def test_ledger_spends_and_fails_closed():

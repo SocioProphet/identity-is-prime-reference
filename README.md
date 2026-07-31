@@ -53,16 +53,20 @@ python -m prime_er.cli segment \
   --seed 7
 ```
 
-The mechanism is person-level ε-DP (Laplace) with **contribution bounding**,
-**k-anonymity suppression** of small cells, and an **exhaustible ε-budget**. It is
-**fail-closed**: a release that would breach the privacy floor or the budget is
-*refused* (exit code 3, `status: "REFUSED"`), never silently degraded — e.g. the
-single-actor `michael_identity_prime_trace.jsonl` refuses with
-`insufficient_actors`, because a cohort of one cannot be released.
+The mechanism is person-level **(ε, δ)-DP**: Laplace noise + **noisy-count
+thresholding** (a "stability histogram" — the keep/drop decision is made on the
+*noised* count, so it is valid DP post-processing) + **contribution bounding**,
+with an **exhaustible ε-budget**. It is **fail-closed**: a release that would
+breach the privacy floor or the budget is *refused* (exit code 3,
+`status: "REFUSED"`), never silently degraded — e.g. the single-actor
+`michael_identity_prime_trace.jsonl` refuses with `insufficient_actors`, because
+a cohort of one cannot be released. Suppressed cells are reported as *counts*
+only (their keys would themselves disclose which categories are below the floor),
+and the RNG seed is never emitted.
 
-Flags: `--max-contribution` (L1 sensitivity), `--k-anonymity` (suppression
-floor), `--min-actors` (whole-release floor), `--budget` and `--ledger`
-(persistent, cross-run ε accounting).
+Flags: `--max-contribution` (L1 sensitivity), `--k-anonymity` (noisy-count
+release threshold), `--min-actors` (operational whole-release floor), `--budget`
+and `--ledger` (persistent, cross-run ε accounting).
 
 ---
 

@@ -9,6 +9,7 @@ from .dp import (
     PrivacyLedger,
     clamp_contribution,
     release_histogram,
+    suppression_delta,
 )
 from .event import Event
 from .policy import Policy
@@ -120,15 +121,18 @@ def segment_summary(
     realm_true, clip_r = clamp_contribution(realm_cells, max_contribution, seed=seed + 1)
     cohort_true, clip_c = clamp_contribution(cohort_cells, max_contribution, seed=seed + 2)
 
+    # Suppression decision is made on the NOISY count (threshold = k_anonymity),
+    # so it is valid post-processing of the DP release -> (epsilon, delta)-DP.
     counts_by_prime, supp_p = release_histogram(
-        prime_true, epsilon=eps_each, sensitivity=max_contribution, k_anonymity=k_anonymity, rng=rng
+        prime_true, epsilon=eps_each, sensitivity=max_contribution, threshold=k_anonymity, rng=rng
     )
     counts_by_realm, supp_r = release_histogram(
-        realm_true, epsilon=eps_each, sensitivity=max_contribution, k_anonymity=k_anonymity, rng=rng
+        realm_true, epsilon=eps_each, sensitivity=max_contribution, threshold=k_anonymity, rng=rng
     )
     cohort_counts, supp_c = release_histogram(
-        cohort_true, epsilon=eps_each, sensitivity=max_contribution, k_anonymity=k_anonymity, rng=rng
+        cohort_true, epsilon=eps_each, sensitivity=max_contribution, threshold=k_anonymity, rng=rng
     )
+    delta_per_cell = suppression_delta(k_anonymity, max_contribution, eps_each)
 
     cohorts = [
         {"cohort_id": _hash_cohort(int(code)), "prime_code": str(code), "count": int(cnt)}
@@ -145,20 +149,23 @@ def segment_summary(
         "counts_by_realm": counts_by_realm,
         "cohorts": cohorts,
         "privacy": {
-            "mechanism": "laplace",
-            "delta": 0.0,
+            "mechanism": "laplace+noisy_threshold",
+            "guarantee": "(epsilon, delta)-DP",
+            "delta_per_cell": delta_per_cell,
             "epsilon_total": float(epsilon),
             "epsilon_per_histogram": eps_each,
             "sensitivity": max_contribution,
             "max_contribution": max_contribution,
-            "k_anonymity": k_anonymity,
+            "release_threshold": k_anonymity,
             "min_actors": min_actors,
             "contributors": n_actors,
             "clipped_actors": {"by_prime": clip_p, "by_realm": clip_r, "cohort": clip_c},
-            "suppressed_cells": {
-                "by_prime": supp_p,
-                "by_realm": supp_r,
-                "cohort_count": len(supp_c),
+            # Counts only: emitting suppressed cell *keys* would itself disclose
+            # which categories fell below the floor.
+            "suppressed_cell_counts": {
+                "by_prime": len(supp_p),
+                "by_realm": len(supp_r),
+                "cohort": len(supp_c),
             },
             "budget": {
                 "total": ledger.total_budget,
@@ -166,7 +173,11 @@ def segment_summary(
                 "remaining": ledger.remaining,
                 "ledger_ref": ledger_path or "<ephemeral>",
             },
-            "seed": seed,
-            "note": "Person-level epsilon-DP (Laplace) with contribution bounding and k-anonymity suppression.",
+            "note": (
+                "Person-level (epsilon, delta)-DP: Laplace noise + noisy-count "
+                "thresholding (stability histogram) + contribution bounding. The "
+                "min_actors whole-release gate is an operational control, not a DP "
+                "guarantee. Production should use a CSPRNG, not a caller-supplied seed."
+            ),
         },
     }

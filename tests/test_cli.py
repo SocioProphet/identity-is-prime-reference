@@ -81,9 +81,14 @@ def test_cli_segment_releases_on_population(tmp_path: Path):
     obj = json.loads(out.read_text(encoding="utf-8"))
     assert obj["status"] == "RELEASED"
     assert "counts_by_prime" in obj and "cohorts" in obj
-    assert obj["privacy"]["mechanism"] == "laplace"
-    assert obj["privacy"]["delta"] == 0.0
+    assert obj["privacy"]["mechanism"] == "laplace+noisy_threshold"
+    assert obj["privacy"]["guarantee"] == "(epsilon, delta)-DP"
+    assert obj["privacy"]["delta_per_cell"] > 0.0
     assert obj["privacy"]["contributors"] >= 5
+    # Suppressed cells are reported as counts only, never as keys.
+    assert isinstance(obj["privacy"]["suppressed_cell_counts"]["by_prime"], int)
+    # The RNG seed must not leak (it would let anyone subtract the noise).
+    assert "seed" not in obj["privacy"]
     # No raw identifiers or device ids in the released aggregate.
     out_text = out.read_text(encoding="utf-8").lower()
     assert "device_id" not in out_text
