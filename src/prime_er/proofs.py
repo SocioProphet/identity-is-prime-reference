@@ -33,6 +33,11 @@ class ProofArtifact:
     claim: str
     status: str  # PROVED | VIOLATION | INCONCLUSIVE
 
+    # Governing epistemic enum (Stardust / SCOPE-D):
+    # proved | bounded | empirical | synthetic | speculative | rejected.
+    # Empty string means "unspecified" and is omitted from the serialized form.
+    epistemic_level: str = ""
+
     inputs: Dict[str, Any] = field(default_factory=dict)
     domains: List[str] = field(default_factory=list)
 
@@ -46,6 +51,10 @@ class ProofArtifact:
 
     def to_json(self) -> str:
         d = asdict(self)
+        # Serialize as the estate-canonical camelCase key; omit when unspecified.
+        lvl = d.pop("epistemic_level", "")
+        if lvl:
+            d["epistemicLevel"] = lvl
         return json.dumps(d, indent=2, sort_keys=True)
 
     @staticmethod
@@ -53,4 +62,8 @@ class ProofArtifact:
         obj = json.loads(s)
         diag = obj.get("diagnostics", {}) or {}
         obj["diagnostics"] = Diagnostics(**diag)
+        # Accept both the canonical camelCase and the python field name.
+        lvl = obj.pop("epistemicLevel", None)
+        if lvl is not None:
+            obj["epistemic_level"] = lvl
         return ProofArtifact(**obj)

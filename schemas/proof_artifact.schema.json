@@ -39,6 +39,18 @@
       },
       "type": "array"
     },
+    "epistemicLevel": {
+      "description": "Governing epistemic enum (Stardust / SCOPE-D).",
+      "enum": [
+        "proved",
+        "bounded",
+        "empirical",
+        "synthetic",
+        "speculative",
+        "rejected"
+      ],
+      "type": "string"
+    },
     "inputs": {
       "type": "object"
     },
