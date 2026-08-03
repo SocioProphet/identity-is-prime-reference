@@ -1,0 +1,15 @@
+{
+  "version": "naming_projection.v1",
+  "description": "Frozen surface-name projection grammar. Names are DERIVED views over the registry object (registry-first: never a source of truth).",
+  "grammar": "{id_base}[{topics}]@e{epoch}.p{phase}.{state}+{lineage}#{env}",
+  "fields": [
+    "id_base",
+    "topics",
+    "epoch",
+    "phase",
+    "state",
+    "lineage",
+    "env"
+  ],
+  "example": "citizen.synthetic.michael[health+family]@e004.p2.allowed+l1#local"
+}

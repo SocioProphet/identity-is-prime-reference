@@ -1,0 +1,98 @@
+{
+  "version": "prime_basis.v1",
+  "description": "Frozen irreducible identity-topic prime basis (Identity-Is-Prime doc, Phase-0). Each topic maps to a distinct prime; a person's active set encodes as the product (Goedel-style).",
+  "basis": [
+    {
+      "topic": "FOUNDER",
+      "prime": 2
+    },
+    {
+      "topic": "PATIENT",
+      "prime": 3
+    },
+    {
+      "topic": "PARENT",
+      "prime": 5
+    },
+    {
+      "topic": "CITIZEN",
+      "prime": 7
+    },
+    {
+      "topic": "CREATOR",
+      "prime": 11
+    },
+    {
+      "topic": "STUDENT",
+      "prime": 13
+    },
+    {
+      "topic": "WORKER",
+      "prime": 17
+    },
+    {
+      "topic": "BELIEVER",
+      "prime": 19
+    },
+    {
+      "topic": "FINANCE",
+      "prime": 23
+    },
+    {
+      "topic": "CONSUMER",
+      "prime": 29
+    },
+    {
+      "topic": "TRAVELER",
+      "prime": 31
+    },
+    {
+      "topic": "CAREGIVER",
+      "prime": 37
+    },
+    {
+      "topic": "VOTER",
+      "prime": 41
+    },
+    {
+      "topic": "EMPLOYEE",
+      "prime": 43
+    },
+    {
+      "topic": "EMPLOYER",
+      "prime": 47
+    },
+    {
+      "topic": "LEARNER",
+      "prime": 53
+    },
+    {
+      "topic": "ARTIST",
+      "prime": 59
+    },
+    {
+      "topic": "ATHLETE",
+      "prime": 61
+    },
+    {
+      "topic": "VOLUNTEER",
+      "prime": 67
+    },
+    {
+      "topic": "NEIGHBOR",
+      "prime": 71
+    },
+    {
+      "topic": "HOBBYIST",
+      "prime": 73
+    },
+    {
+      "topic": "ADVOCATE",
+      "prime": 79
+    },
+    {
+      "topic": "STEWARD",
+      "prime": 83
+    }
+  ]
+}
