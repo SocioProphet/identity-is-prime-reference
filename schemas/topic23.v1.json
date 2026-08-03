@@ -1,0 +1,30 @@
+{
+  "version": "topic23.v1",
+  "description": "Frozen 23-topic analytic projection atlas (theta_t). Illustrative v1 topic set; the algebra is invariant to the specific names. Projection = indicator over these 23 axes.",
+  "topics": [
+    "FOUNDER",
+    "PATIENT",
+    "PARENT",
+    "CITIZEN",
+    "CREATOR",
+    "STUDENT",
+    "WORKER",
+    "BELIEVER",
+    "FINANCE",
+    "CONSUMER",
+    "TRAVELER",
+    "CAREGIVER",
+    "VOTER",
+    "EMPLOYEE",
+    "EMPLOYER",
+    "LEARNER",
+    "ARTIST",
+    "ATHLETE",
+    "VOLUNTEER",
+    "NEIGHBOR",
+    "HOBBYIST",
+    "ADVOCATE",
+    "STEWARD"
+  ],
+  "projection": "indicator_vector[23]"
+}

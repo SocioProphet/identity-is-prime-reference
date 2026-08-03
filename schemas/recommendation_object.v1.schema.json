@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://socioprophet.org/schemas/identity-is-prime/recommendation_object.v1.schema.json",
+  "title": "RecommendationObject v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ro_id",
+    "evidence",
+    "risk",
+    "recommendation",
+    "rollback",
+    "validation"
+  ],
+  "properties": {
+    "ro_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "trace_id",
+        "violating_event",
+        "active_primes",
+        "blocked_scope"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "trace_id": {
+          "type": "string"
+        },
+        "violating_event": {
+          "type": "string"
+        },
+        "active_primes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blocked_scope": {
+          "type": "string"
+        }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "required": [
+        "severity",
+        "reason"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "required": [
+        "action",
+        "alternative"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "alternative": {
+          "type": "string"
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

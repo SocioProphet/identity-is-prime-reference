@@ -1,0 +1,26 @@
+{
+  "version": "surface343.v1",
+  "description": "Frozen 343-trit harmonic surface: 7 layers x 49 trits. Each 49-cell layer frame = 23 topic cells + 23 witness/dual/confidence cells + 3 control cells.",
+  "layers": 7,
+  "cells_per_layer": 49,
+  "total_trits": 343,
+  "layer_frame": {
+    "topic_cells": 23,
+    "witness_cells": 23,
+    "control_cells": 3
+  },
+  "layer_names": [
+    "ACCESSION",
+    "TRUST_CAPABILITY",
+    "PROJECTION_BRIDGE",
+    "SEMANTIC",
+    "CONSTRAINT_LATTICE",
+    "TEMPORAL",
+    "PROOF_DAG"
+  ],
+  "trit_values": [
+    -1,
+    0,
+    1
+  ]
+}
